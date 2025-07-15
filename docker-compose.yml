@@ -1,74 +1,67 @@
-version: "1.6.0"
+version: 1.6.0
 services:
   data_manager-nginx:
-
     image: xiexf128/data_manager-nginx:latest
-    #comment the build section if you want to download from docker hub
-    # build:
-    #   context: nginx/
-    #   tags:
-    #     - xiexf128/data_manager-nginx:1.5
-    #     - xiexf128/data_manager-nginx:latest
     restart: always
     volumes:
-      - uwsgi_data:/tmp/uwsgi/
-      - web_static:/var/www/datamanager/assets/:ro
+    - uwsgi_data:/tmp/uwsgi/
+    - web_static:/var/www/datamanager/assets/:ro
     ports:
-      - "8014:80"
+    - 8014:80
     depends_on:
-      - data_manager-django
+    - data_manager-django
   data_manager-django:
-    &django_project
     image: xiexf128/data_manager-django:latest
-    #comment the build section if you want to download from docker hub
-    # build:
-    #   context: ./web/
-    #   tags:
-    #     - xiexf128/data_manager-django:1.6.0
-    #     - xiexf128/data_manager-django:latest
     restart: always
-    command: >
-      sh -c "/venv/bin/python3 manage.py collectstatic --noinput   && /venv/bin/uwsgi   --ini /app/datamanager.uwsgi.ini --enable-threads"
-    env_file:
-      - ./.django_secrets.env #app configure file
-    environment:
-      is_docker: "True"
-      system_version: "1.6.0_db36a41"  # docker version number_app git commit hash
+    command: 'sh -c "/venv/bin/python3 manage.py collectstatic --noinput   && /venv/bin/uwsgi   --ini
+      /app/datamanager.uwsgi.ini --enable-threads"
+
+      '
+    env_file: &id001
+    - ./.django_secrets.env
+    environment: &id002
+      is_docker: 'True'
+      system_version: 1.6.0_db36a41
     volumes:
-      - uwsgi_data:/tmp/uwsgi/
-      - web_static:/app/static/
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /var/temp/:/app/media/temp/ # volume file conversion
-      #Please configure your folder/drive to save the data, make sure folders exist
-      #in Windows, /d/docker/primary_storage means d:/docker/primary_storage
-      #in Linux please just use linux folder native format
-      #primary storage location, required
-      #all other are optional, but recommended, doesn't need to adhere strictly to
-      #the meaning of folder name, i.e., remote_storage doesn't need to be remote
-      
-      - type: bind
-        source: /D/docker/primary_storage # primary storage, default saving everything in C drive root, please change
-        target: //app/media//primary_storage #don't change
-      #secondary_storage, optional but recommended
-      - type: bind
-        source: /D/docker/secondary_storage
-        target: //app/media//secondary_storage #don't change
-      #remote_storage, optional but recommended
-      - type: bind
-        source: /D/docker/remote_storage
-        target: //app/media//remote_storage #don't change
-      #offline_storage, optional but recommended  
-      - type: bind
-        source: /D/docker/offline_storage
-        target: //app/media//offline_storage #don't change
-
+    - uwsgi_data:/tmp/uwsgi/
+    - web_static:/app/static/
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /var/temp/:/app/media/temp/
+    - &id003
+      type: bind
+      source: ./volumes/primary_storage
+      target: //app/media//primary_storage
+    - &id004
+      type: bind
+      source: ./volumes/secondary_storage
+      target: //app/media//secondary_storage
+    - &id005
+      type: bind
+      source: ./volumes/remote_storage
+      target: //app/media//remote_storage
+    - &id006
+      type: bind
+      source: ./volumes/offline_storage
+      target: //app/media//offline_storage
   data_manager-JupiterNotebook:
-    <<: *django_project
-    command: >
-      sh -c "/venv/bin/python3 manage.py shell_plus --notebook"
-    ports:
-      - "8085:8080"
+    image: xiexf128/data_manager-django:latest
+    restart: always
+    command: 'sh -c "/venv/bin/python3 manage.py shell_plus --notebook"
 
+      '
+    env_file: *id001
+    environment: *id002
+    volumes:
+    - uwsgi_data:/tmp/uwsgi/
+    - web_static:/app/static/
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /var/temp/:/app/media/temp/
+    - *id003
+    - *id004
+    - *id005
+    - *id006
+    ports:
+    - 8085:8080
 volumes:
-  uwsgi_data:
-  web_static:
+  uwsgi_data: null
+  web_static: null
