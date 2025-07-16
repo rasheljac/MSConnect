@@ -30,19 +30,19 @@ services:
     - &id003
       type: bind
       source: ./volumes/primary_storage
-      target: //app/media//primary_storage
+      target: /app/media/primary_storage
     - &id004
       type: bind
       source: ./volumes/secondary_storage
-      target: //app/media//secondary_storage
+      target: /app/media/secondary_storage
     - &id005
       type: bind
       source: ./volumes/remote_storage
-      target: //app/media//remote_storage
+      target: /app/media/remote_storage
     - &id006
       type: bind
       source: ./volumes/offline_storage
-      target: //app/media//offline_storage
+      target: /app/media/offline_storage
   data_manager-JupiterNotebook:
     image: xiexf128/data_manager-django:latest
     restart: always
